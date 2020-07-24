@@ -1,0 +1,312 @@
+# ML
+## Chapter 1 Introduction
+----
+### Types
+* Supervised Learning
+  * Classification
+    * Binary 
+      * Positive + Negative
+    * Multi-class
+  * Regression (to what extent) 
+    Mapping f: X -> Y
+* Unsupervised Learning
+  * Clustering
+### Terms
+
+Data from *Data set* which records description for *instance* / *sample*  
+Each item has *feature* / *attribute* , could be extend to *attribute space* / *sample space*   
+Every item can be represented as a *feature vector* in a multi-dimensional space of features
+
+Use some_algorithm to *train* / let it *learn*
+*Training data* has many *training sample*s, the union of these is called *training set*
+
+After trianing, the machine can learn *hypothesis*, which is close to the *ground-truth* of the instance. Need to test, *test sample* 
+
+Since the data set we got may be a part of a *distribution* for some certain objects, the more data we got, the better *generalization* it has.   
+Note the data got is *i.i.d. (independent and identically distributed)* over the distribution
+
+*Induction* <=> *Generalization*  e.g. Learn the fact from data / samples, we get *concept* (**Concept Learning**)
+*Deduction* <=> *Specification*   e.g. Use theorems / theories to deduct a theory (mathematical)
+
+### Hypothesis Space
+The learning process could be regarded as in the *hypothesis space* find the *fit* hypothesis for the training set  
+e.g. To judge if a watermelon is good, we have hypothesis space (color = ?) ^ (root = ?) ^ (knock_sound = ?)
+(Note: In some cases, need to consider empty set processibility, i.e. no good watermelon)
+
+### Inductive Bias
+Multiple hypothesis have intersections with the training set hypothesis, we called the *version space*  
+(color = *, root = *, knock_sound = *)  (color = *, root = *, knock_sound = clear & crispy)
+                    (color = *, root = xxx, knock_sound = clear & crispy)
+
+However, this version space could confuse the machine if it we do not set a preference  
+The preference for certain set / type is called *inductive bias* 
+
+Is there a guidance for inductive bias? The most famous is *Occam's razor*: Select the simplest one  
+But in many cases, it is hard to define 'simpliest'. Need other help mechanisms
+
+NFL Theorem (No Free Lunch Theorem): Whatever good ML algo 'a' is and whatever bad ML algo 'b' is, their expection value is the same  
+(Note: There is a premise that all problems and tasks are the **same important**, but actually not in most real cases)
+---> Inductive Bias is crucial 
+### Some History and terms
+In the 1980s, *symbolism study* is popular in inductive learning, includes(*Decision Tree*, *ILP* i.e. Inductive Logic Programming)  
+Before mid 1990s, *Connecting learning* is popular, it is a 'black box', but 'BP' Algo helps it is implemented in many problems  
+After mid 1990s *Statistical Learning* stands on the stage, includes(*SVM* i.e. Supporting vector machine,  *Kernel Methods*)  
+
+*Data Mining* is based on ML + Database + Statistics
+* DB: Data Management
+* ML + Statistics: Develop effective algorithms
+* Then mine from enoronums data
+
+Not only Occam's razor principle, but also many others, including *Principle of multiple explanations* (Keep the hypothesis which is consistent to experience and observation)
+(**Ensemble Learning**)
+
+## Chapter 2 Model Assesment & Chosen
+----
+### Errors and Overfitting
+In the training data, error called **training error** / **empirical error**
+Error over the new data is called **Generalization error**
+
+**Overfitting**  
+If our learner has nearly no training error, generally will cause huge generalization error. Too much noise data
+
+Since in ML, we want the machine learn the general fact AMAP, but if nealy no training error means possibly it learns some specific features for the training data, but not apply for generalization.
+
+**Underfitting** 
+Opposite for overfitting  
+
+Q: Since we would like to select the model whose generalization error is the smallest, but we cannot get general data, how can we asses and choose model?  
+
+### Assesment methods
+Introduce *Testing set* to simulate generalization data  
+(Mind the testing set data should be excluded in the training data AMAP)   
+
+If we only finite data *D*, how to divide them into training + testing sets  
+After we select the assesment, train and test. We need to use all D for train again
+
+#### Hold-out
+No intersection  
+Using **stratified sampling** to divide data
+e.g. training data contaisns 350 positive, 350 negative,
+     testing data contains 150 positive, 150 negative
+Generally we will use hold-out to do multiple training and testing, and take the mean   
+(e.g. this time assign 1st 350 to training, next time assign 2nd 350 to training...)  
+Generally we take 2/3 ~ 4/5 of D as training set
+
+#### (k-fold) Cross validation
+Divide into k excluded sets, use k-1 sets for training, the left for testing  
+Generally k = 10 (5 / 20 /...)  
+e.g. 10 times 10-fold
+|Index|Training|Testing|
+|:--|:--:|--:|
+|1st|D1, D2,..., D9|D10|    
+|2nd|D1, D2,..., D8, D10|D9|  
+|...|...|...|--> Mean  
+|9th|D1, D3,..., D10|D2|     
+|10th|D2, D2,..., D10|D1|      
+
+Need to do p times k-fold  
+Actually almost the same as hold out doing multiple times
+##### LOO (Leave-one-out)
+Special case for k-fold, each set only contains 1 element  
+Evem though the result is close to D  
+The cost is unaffordable when dealing with 'Big Data', and the test set is small
+
+#### Bootstraping
+Based on bootstraping sampling  
+Data set D, new set D', every time randomly copy one element in D to D', m times  
+size(D) = size(D')  
+so some of elements in D possibly is not in D'  
+$p($in D not in D'$) = lim_{m->\infty} (1 - (\frac{1}{m} ))^m = (\frac{1}{e}) \approx 0.368$  
+Training set: D'  
+Testing set: D\D'  
+result called *out-of-bag estimate*  
+
+Better for small data set, and difficult to classify training / test set
+
+### Performance Measure
+How to asses the generalization of the machine?  
+Here introduce performance measure
+
+D = {($\bold x_1, y_1$),($\bold x_2, y_2$), .. ,($\bold x_m, y_m$)} 
+(where $y_i$ is the true label for $f(x_i)$)  
+
+* **Mean Squad Error**  (Popular in Regression)  
+
+  * Discrete  
+    $E(f;D) = \frac{1}{m}\sum\limits_{i=1}^mf(x_i - y_i)^2$
+  * Continuous  
+    $E(f;D) = \int_{D}(f(x) - y)^2 p(x)dx$  
+    Distribution $D$ + p.m.f. $p(x)$
+* Error Rate & Accuracy
+  * Error Rate  
+    $E(f;D) = \frac{1}{m}\sum\limits_{i=1}^mcount(f(x_i) \neq y_i)$  
+    $E(f;D) = \int_{D}count(f(x) \neq y)^2 p(x)dx$  
+  * Accuracy  
+    $1 - E(f;D)$
+* Precision & Recall  
+When precision is high, recall is low, vice versa.  
+Construct a PR diagram of PR curve.  
+    * No intersection
+      One curve is completely higher than another, then this is better.
+    * With intersections
+      * Compare areas
+      * **BEP**(Break-even-points, intersection with $y = x$)
+      * $F_\beta = \frac{(1 + \beta^2) \times P \times R}{(\beta^2 \times P) + R}$
+        * $\beta = 1$ P, R are the same weight
+        * $\beta > 1$ Recall is more important
+        * $\beta < 1$ Precision is more important
+  
+  **Binary-classification**
+  |Real\Estimate|Positive|Negative|
+  |:--|:--:|--:|
+  |Positive|TP|FN|
+  |Negative|FP|TN|
+  * Precision (real good / estimate)
+    $\frac{TP}{TP + FP}$ <=> $\frac{Got \cap Good}{Got}$
+  * Recall  (real good / real)
+    $\frac{TP}{TP + FN}$ <=> $\frac{Got \cap Good}{Good}$
+
+If we got n binary classification matrixs, how to get their P & R
+* Marco
+  1. Calculate $(P_i, R_i)$ for every matrix 
+  2. Get $(P_1, R_1), (P_2, R_2),...,(P_n, R_n)$
+  3. marco-P = $\frac{1}{n}\sum\limits^n_{i=1}P_i$
+  4. marco-R = $\frac{1}{n}\sum\limits^n_{i=1}R_i$
+  5. marco-F1 = $\frac{2 \times marcoP \times marcoR}{marcoP + marcoR}$
+* Micro
+  1. calculate each division mean
+  2. micro-P = $\frac{\overline{TP}}{\overline{TP} + \overline{FP}}$
+  3. micro-R = $\frac{\overline{TP}}{\overline{TP} + \overline{FN}}$
+  4. micro-F1 = $\frac{2 \times microP \times microR}{microP + microR}$
+## Chapter 3 Linear Model
+----
+Each *__x__* = ($x_1, x_2,...,x_d$) has d features  
+Linear Model $f(x) = w^Tx + b$
+
+### Linear Regression
+D = {($\bold x_1, y_1$),($\bold x_2, y_2$), .. ,($\bold x_n, y_n$)}  
+Each $x_i$ here = ($x_{i1},x_{i2},..., x_{id}$) is an item with d features
+
+* If features has order relationship:  
+  change to real number with order
+* Otherwise:  
+  change to k-dimension vector   
+  (0,1,0)  --->  watermelon  
+  (1,0,0)  --->  apple  
+  (0,0,1)  --->  peach
+
+$f(x_i) = ( wx_i + b) \simeq y_i$
+#### How to get w & b?
+---
+Using least square method
+1. ($w^*,b^*$) = argmin$\sum\limits^m_{i=1}(y_i - wx_i - b)^2$  
+2. Let $E(w,b) = \sum\limits^m_{i=1}(y_i - wx_i - b)^2$   
+When partial derivative of w and b both be zeros, we get optimal solution for w & b  
+*Parameter estimation*
+3. Then get the closed-form solution  
+   * w = $\frac{\sum\limits^m_{i=1}y_i (x_i - \overline x)}{\sum\limits^m_{i=1}x_i^2 -\frac{1}{m}(\sum\limits^m_{i=1}x_i)^2}$
+   * b = $\frac{1}{m}\sum\limits^m_{i=1}(y_i - wx_i)$
+
+----
+#### **Multivariate linear regression**  
+We just get a w,b for a single x, but we have multiple x in D
+1. $\hat{w} = (w;b)$, $D$ = $\bold X$ size ($m \times (d + 1)$) with an additional 1 at the end of every row
+2. Using least square method  
+   $\hat{w}^*$ = $argmin_{\hat{w}}(y - X\hat{w})^T(y - X\hat{w})$
+3. $E_{\hat{w}} = (y - X\hat{w})^T(y - X\hat{w})$  
+   partial derivative on $\hat{w}$ = $2X^T(X\hat{w} - y)$
+4. * If $X^TX$ is a full-rank / positive definite matrix  
+       1. $\hat{w}^* = (X^TX^{-1}X^Ty)$  
+       2. $\hat{x_i} = (x_i, 1)$
+       3. $f(\hat{x_i}) = \hat{x_i}^T(X^TX)^{-1}X^Ty$
+    * But in many cases, it is not
+        descide by inductive bias + generalization
+#### Some Extensions
+Regard y as any function  
+$y = w^Tx + b$ here $y = ln(y')$ 
+==> $ln(y) = w^Tx + b$ **Log-linear expression**
+
+$g(y) = w^Tx + b$ **Generalized Linear Model**  
+where $g()$ is **Link Function**
+
+### Logistic function
+Generalized linear model applies for classification problem  
+We would like to find a continuous function to convert to binary set, so **unit-step function** is not appropriate  
+$y = \frac{1}{1 + e^{-z}}$  
+After calculation, $ln(\frac{y}{1-y}) = w^Tx + b$  
+Since here is binary classification, we define y be getting the positive, 1 - y be getting the negative.  
+* Odds: $\frac{1}{1-y}$. The relative probability of x be positive 
+* log odds (logit): $ln(\frac{1}{1-y})$
+
+## ....
+## Chapter 4 Decision Tree
+Divide and concuquer
+### How to spilt
+#### Information Gain (ID3 uses)
+Could see the example of Stadford Uni CS229 Decision Tree Misclassification, 
+$L_{missclass} = 1 - max$ $\hat{p_c}$
+This loss function is not sensitive, so using cross-etropy to measure.
+
+$min$ $J_{cross} = Ent(D) = -\sum\limits_{c=1}p_clog_2p_c$ 
+
+$max$ $Gain(D,a) = Ent(D) - \sum\limits_{v=1}^V\frac{|D^v|}{|D|}Ent(D^v)$  
+where a is feature,V is the number of value of that feature
+#### Gain Ratio (C4.5 uses)
+$Gain\_ratio(D,a) = \frac{Gain(D,a)}{IV(a)}$  
+$IV(a) = -\sum\limits_{v=1}^V\frac{|D^v|}{|D|}log_2\frac{|D^v|}{|D|}$  
+where a is feature, V is the number of value of that property
+
+Note that spilt does not depent on Gain ratio completely, it gave insights:   
+Select the information gain which is higher than average, then select from the gain ratio in that set
+#### Gini index (CART uses)
+$Gini(D) = \sum\limits_{k=1}^{|y|}\sum\limits_{k'\ne k}p_kp_{k'} = 1 - \sum\limits_{k=1}^{|y|}p_k^2$
+
+$min$ $Gini\_index(D,a) = \sum\limits_{v=1}^V\frac{|D^v|}{|D|}Gini(D^v)$
+### Pruning
+Approach to address overfitting
+![](https://camo.githubusercontent.com/2c8a6d03a1af1ac0240faeb473c05b46f4211af3/68747470733a2f2f692e6c6f6c692e6e65742f323031382f31302f31372f356263373238656338306433342e706e67)
+
+#### Prepruning
+When we are creating a decision tree, at each spilt, evaluate before creating new children.
+
+Evaluation: compare the accuracy of spilting and that of leave it as a leaf.  
+If leaf_accuracy > spilt_accuracy, then leave it as a leaf. Otherwise, spilt it.
+
+![](https://camo.githubusercontent.com/b000e23343de4b2ade63c5cba32b244b796506fc/68747470733a2f2f692e6c6f6c692e6e65742f323031382f31302f31372f356263373238656339653333302e706e67)
+
+Pros & Cons
+* Reduce the risk of overfitting
+* Reduce the cost of space and time
+* But improves the risk of underfitting in generalization
+#### Postpruning
+1. Create a complete decision tree
+2. Bottom up, evaluate for each non-leaf node.
+3. Evluation: Compare the current accuracy and that of replacing the current node as a leaf.
+   
+   If removing_accuracy > current_accuracy, then replace as a leaf. Otherwise, no change
+
+![](https://camo.githubusercontent.com/36ca29e8e041172b6c63ad45eae2a54df4080311/68747470733a2f2f692e6c6f6c692e6e65742f323031382f31302f31372f356263373238656339643439372e706e67)
+
+Pros & Cons
+* Reduces the risk of overfitting + underfitting
+* Generalization performance is better than prepruning 
+* Increase the cost of space and time
+
+### Continuous and NAN
+#### Deal with continuous data 
+Intution: The given continuous data has range, using formulas to define a seperator to divide the continuous data, so it become discrete.
+
+1. Sort the continuous data in ascending style
+2. Using formula to compute the list of candidates for seperator.  
+   $T_a = \{\frac{a^i + a^{i+1}}{2}$ | $1 \le i \le n - 1\}$\
+3. For each candidate, calculate the Information Gain, find the one to max the value
+
+#### Deal with NAN
+* Only uses the data with complete features, not realistic in many cases
+* Using C4.5
+  1. Define some terminalogy
+  For each feature a
+     * $\tilde{D}$: All sample data without NAN
+     * $\tilde{D^v}$: All samples in $\tilde{D}$ whose feature value = $a^v$ (e.g. color = green)
+     * $\tilde{D_k}$: All samples in $\tilde{D}$ whose type is k
+     * TODO
