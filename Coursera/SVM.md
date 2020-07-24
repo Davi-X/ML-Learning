@@ -7,7 +7,7 @@ Original: $A + \lambda B$, to $CA + B$ (could understand C plays a role of $\fra
 ![](https://miro.medium.com/max/2000/1*h5QqCdm48pt84bazOPvExA.png)
 
 
-## Linear SVM
+## Linear SVM (Linear Kernel)
 Generally we have multiple ways to classify, SVM will find the decision boundary with the largest margin **Large Margin Classifier**
 
 Support vector is a sample that is incorrectly classified or a sample close to a boundary
@@ -32,7 +32,7 @@ Since $\Theta$ and $x$ are vectors, using the theorem above,
 * We could like to min CA + B, so min both, for B: $\frac{1}{2}\sum\limits_{j=1}^n\theta_j^2 = \frac{1}{2}||\Theta||^2$
 * Would like to max $p^{(i)}$ so to min $||\Theta||$
 
-## Non-Linear
+## Non-Linear 
 How to classify the non-linear data using SVM?
 
 Using similarity function $f_i$ to denote data $x_i$ with landmarks $l^{(i)}$
@@ -45,10 +45,59 @@ There are many choices for $f_i$, generally using **Gaussian Kernel**
 
  $\sigma$ is input, value $\uparrow$, range of data of plot $\uparrow$
 
- result = $\theta_o + \theta_1f_1 + \theta_2f_2 + ... + \theta_nf_n$
+ result = $\theta_o + \theta_1f_1 + \theta_2f_2 + ... + \theta_nf_m$
  * If result $\ge 0$, predict = 1
  * otherwise, predict = 0
   
 After feeding data, we can draw the decision boundary
 
 But how to choose $l^{(i)}$ and other parameters?
+
+1. Using feacture scaling to scale the data
+2. Given data set with size m, for each $x^{(i)}$, let $l^{(i)} = x^{(i)}$
+3. Compute $\vec f^{(i)} = \begin{bmatrix} 
+                              f_0^{(i)} \\  
+                              f_1^{(i)} \\ 
+                              f_2^{(i)} \\
+                              ...       \\
+                              f_i^{(i)} \\
+                              ...       \\
+                              f_m^{(i)}  
+                            \end{bmatrix}$
+                         = $\begin{bmatrix} 
+                              1 \\  
+                              sim(x^{(i)}, l^{(1)}) \\
+                              sim(x^{(i)}, l^{(2)}) \\
+                              ...                   \\
+                              sim(x^{(i)}, l^{(i)}) = 1 \\ 
+                              ...       \\
+                              sim(x^{(i)}, l^{(m)})  
+                            \end{bmatrix}$
+4. Training:
+   ![](https://miro.medium.com/max/2000/1*ssIbIMbFrpireIvOq_N_IA.png)
+5. Debug:
+    * Overfit: 
+      * Increase $\sigma^2$
+      * Decrease $C$
+    * Underfit:
+      * Decrease $\sigma^2$
+      * Increase $C$
+
+Other kernels:
+* Polynomial Kernel  
+  $sim = (x^{(i)^T}l^{(i)} + c)^d$
+* More esoteric
+  * String kernel
+  * chi-square kernel
+  * histogram kernel
+  * intersection kernel
+  * ... 
+## Choices between Logistic Regression & SVMs
+* n is large(relatively to m):  
+  $n \ge m$, using Logistic Regression / Linear Kernel
+* n is small, m is intermediate:   
+  e.g. (n: 1 - 1000, m: 10 - 10,000)  
+  using SVMs with Gaussian Kernel
+* n is small, m is large:  
+  e.g. (n: 1 - 1000, m: 50,000+)
+  Create/add more features, and using logistic Regression / Linear Kernel
